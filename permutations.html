@@ -1,0 +1,179 @@
+<html>
+<head>
+<style>
+#mult-table {
+  margin-top: 15px;
+  margin-left: 40px;
+  border-collapse: collapse;
+}
+#mult-table td {
+  border: 1px dotted brown;
+  padding: 5px;
+}
+#times {
+  font-size: x-large;
+  position: relative;
+  top: 6px;
+  left: 3px;
+}
+
+.elmt-legend {
+  background: #8AC3F1;
+}
+</style>
+
+</head>
+<body>
+
+<div id="mydiv">
+</div>
+
+<table id="mult-table">
+</table>
+
+<script>
+function writePermutations(perms, annotations) {
+  var theDiv = document.getElementById("mydiv");
+  for (var i=0; i<perms.length; i++) {
+	var str = perms[i].join();
+	if (annotations && annotations.length > i) {
+	  str = annotations[i] + " : " + str;
+	}
+	var sp = document.createElement("span");
+	sp.innerHTML = str;
+	theDiv.appendChild(sp);
+	//var t = document.createTextNode(str);
+	//theDiv.appendChild(t); 
+	var elmt = document.createElement("br");
+	theDiv.appendChild(elmt);
+  }
+}
+
+function traversePermutations(p){
+  var perms = [];
+  if (p.length > 1) {
+    for (var i=0; i<p.length; i++) {
+	  /* for each element in the permutation. combine it with
+	  every sub permutation by placing the element in every
+	  position of the sub permutations.  */
+	  
+	  var newp = p.slice(1);
+	  console.log("newp ", newp);
+	  var subperms = traversePermutations(newp);
+	  console.log("subperms ", subperms);
+	  for (j=0; j<subperms.length; j++) {
+	    var sp = subperms[j];
+		sp.splice(i, 0, p[0]);
+	    perms.push(sp);
+      }
+	}
+  } else {
+    perms.push(p);
+  }
+  return perms;
+}
+
+function classifyPermutations(perms) {
+  classes = [];
+  for (var i=0; i<perms.length; i++) {
+    p = perms[i];
+	var cnt = 0;
+	for (var j=0; j<p.length; j++) {
+	  if (p[j] == j+1) {
+	    cnt++;
+	  }
+	} // end for
+
+	var cl = null;
+    if (cnt == p.length) {
+	    cl = "identity";
+	} else if (cnt > 0) {
+	    cl = "transposition";
+	} else {
+	    cl = "rotation";
+	} 
+    classes.push([cl, p]);	
+  } // end for
+  return classes;
+} // end function
+
+function createMultTable(perms, binOp) {
+  var multTable = [];
+  for (var i=0; i<perms.length; i++) {
+    var row = [];
+	for (var j=0; j<perms.length; j++) {
+      var p1 = perms[i];
+	  var p2 = perms[j];
+	  var p3 = binOp(p1, p2);
+	  row.push(p3);
+    } // end for
+    multTable.push(row);	
+  } // end for
+  return multTable;
+} // end function
+
+function composePerms(p1, p2) {
+  var p3 = [];
+  for (var k=0; k<p1.length; k++) {
+	var e = p2[p1[k]-1];
+	p3.push(e);
+  } // end for
+  return p3;
+}
+
+function indexOfArray(haystack, needle) {
+  for (var i=0; i<haystack.length; i++) {
+    var cnt = 0;
+	for (var j=0; j<needle.length; j++) {
+	   if (needle[j] == haystack[i][j]) {
+	     cnt++;
+	   }
+	}
+	if (cnt == 3) { return i; }
+  }
+  return null;
+}
+
+function displayMultTable(tblId, tbl, perms, annotations) {
+  var theTbl = document.getElementById(tblId);
+  var tr = document.createElement("tr");
+  var s;
+  s = "<td><span id='times'>*</span></td>";
+  for (var i=0; i<annotations.length; i++) {
+    s += "<td>" + annotations[i] + "</td>";
+  }	
+  tr.innerHTML = s;
+  tr.setAttribute("class", "elmt-legend");
+  theTbl.appendChild(tr);
+  for (var i=0; i<tbl.length; i++) {
+  	var rw = document.createElement("tr");
+	s = "<td class='elmt-legend'>" + annotations[i] + "</td>";
+	for (var j=0; j<tbl[i].length; j++) {
+	  d = annotations[indexOfArray(perms, tbl[i][j])];
+	  s += "<td>" + d + "</td>"
+	}
+	rw.innerHTML = s;
+    theTbl.appendChild(rw);
+  } // end for
+} // end function
+
+perms = traversePermutations([1,2,3]);
+
+classifies = classifyPermutations(perms);
+
+var annotations = ['e', '&tau;<sub>1</sub>', '&tau;<sub>2</sub>', '&sigma;<sub>1</sub>', '&sigma;<sub>2</sub>', '&tau;<sub>3</sub>'];
+writePermutations(perms, annotations);
+
+var tbl = createMultTable(perms, composePerms);
+
+displayMultTable("mult-table", tbl, perms, annotations);
+
+document.write("<br/><br/><br/><br/>");
+
+
+document.write("Script Completed");
+
+</script>
+
+</body>
+</html>
